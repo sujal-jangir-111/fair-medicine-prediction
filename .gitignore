@@ -1,0 +1,26 @@
+# Virtual environments (covers both backend and frontend)
+venv/
+**/venv/
+.venv/
+**/env/
+
+# Python cache & compiled files
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# EasyOCR downloaded model weights and data
+easyocr_data/
+**/easyocr_data/
+ocr_models/
+**/ocr_models/
+
+# Streamlit local settings
+.streamlit/
+**/.streamlit/
+
+# Operating system files
+.DS_Store
+Thumbs.db
