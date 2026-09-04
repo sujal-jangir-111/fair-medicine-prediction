@@ -1,196 +1,177 @@
-code
-Markdown
 <div align="center">
 
-# 💊 Fair Medicine: AI-Powered Fair Price & Alternative Prediction Engine
+# 💊 Fair Medicine
 
-### *Democratizing Healthcare Access via Computer Vision & Machine Learning*
+### AI-Powered Fair Price & Alternative Prediction Engine
 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://fair-medicine-ui-9wqmwrtgdxoni8zmki7f47.streamlit.app/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![Render](https://img.shields.io/badge/Render-Hosted-46E3B7?style=for-the-badge&logo=render)](https://render.com/)
 [![Scikit-Learn](https://img.shields.io/badge/scikit--learn-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
 [![EasyOCR](https://img.shields.io/badge/OCR-EasyOCR-4B8BBE?style=for-the-badge&logo=python)](https://github.com/JaidedAI/EasyOCR)
-[![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python)](https://python.org)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python)](https://python.org)
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](#license)
 
-<br/>
-
-[Explore Live Demo](https://fair-medicine-ui-9wqmwrtgdxoni8zmki7f47.streamlit.app/) • [API Documentation](#-api-specifications--contracts) • [Report Bug](https://github.com/sujal-jangir-111/fair-medicine-prediction/issues) • [Request Feature](https://github.com/sujal-jangir-111/fair-medicine-prediction/issues)
+[Live Demo](https://fair-medicine-ui-9wqmwrtgdxoni8zmki7f47.streamlit.app/) • [Architecture](#-project-architecture) • [Setup](#-local-setup) • [API](#-api-endpoints)
 
 </div>
 
 ---
 
-## 📑 Table of Contents
+## Overview
 
-- [Executive Summary & Real-World Impact](#-executive-summary--real-world-impact)
-- [System Architecture & Data Flow](#-system-architecture--data-flow)
-- [Machine Learning Lifecycle](#-machine-learning-lifecycle)
-  - [1. Exploratory Data Analysis & Data Sanitation](#1-exploratory-data-analysis--data-sanitation)
-  - [2. Feature Engineering](#2-feature-engineering)
-  - [3. Preprocessing Pipeline (`ColumnTransformer`)](#3-preprocessing-pipeline-columntransformer)
-  - [4. Model Training, Tuning & Benchmark](#4-model-training-tuning--benchmark)
-  - [5. Model Serialization & Production Strategy](#5-model-serialization--production-strategy)
-- [Optical Character Recognition (OCR) Engine](#-optical-character-recognition-ocr-engine)
-- [Repository Architecture (Monorepo)](#-repository-architecture-monorepo)
-- [API Specifications & Contracts](#-api-specifications--contracts)
-- [Local Setup & Development Guide](#-local-setup--development-guide)
-- [Production Cloud Deployment](#-production-cloud-deployment)
-- [Roadmap & Future Enhancements](#-roadmap--future-enhancements)
-- [Author & Acknowledgments](#-author--acknowledgments)
+Fair Medicine is a healthcare affordability platform that helps users detect whether a medicine is overpriced and discover cheaper, clinically equivalent alternatives. It combines OCR-based prescription reading, machine learning-based fair price prediction, and a medicine comparison engine to make healthcare decisions more transparent.
+
+This project is designed to reduce medicine cost confusion for patients by identifying:
+
+- overpriced branded medicines,
+- affordable alternatives with the same active ingredients,
+- fair price estimates based on market patterns,
+- medication information from uploaded prescriptions or manual input.
 
 ---
 
-## 🌍 Executive Summary & Real-World Impact
+## Why this matters
 
-Out-of-pocket healthcare expenses remain one of the leading drivers of medical debt globally. In pharmaceuticals, patients regularly purchase high-priced **branded medicines** without knowing that **chemically bioequivalent, generic alternatives** exist at 50% to 85% lower cost.
+Healthcare affordability remains a major issue, especially when patients buy medicines without knowing whether they are paying too much. In many cases, medicines with the same active ingredients are sold at drastically different prices due to branding, distribution, and market strategy.
 
-### The Pain Points
-1. **Severe Price Asymmetry:** Two medicines with the exact same active pharmaceutical ingredient (API), salt strength, and therapeutic class can differ wildly in market price due to branding and aggressive marketing.
-2. **Prescription Illegibility:** Doctor prescriptions and medicine strip typography are challenging for consumers to read and cross-check against generic medical databases.
-3. **Lack of Instant Counter-Verification:** Consumers standing at a pharmacy counter have no instant tool to verify if a quoted price is fair or if a safe substitute exists in real time.
+Fair Medicine addresses this by combining:
 
-### The Fair Medicine Solution
-**Fair Medicine** provides an end-to-end computer vision and predictive pricing framework:
-* **Prescription Scanning:** Extracts medicine names and active chemical formulations from images using **EasyOCR**.
-* **Fair Price Prediction:** Evaluates non-linear market attributes and predicts an expected, fair baseline price using ensemble regressors (**HistGradientBoostingRegressor**).
-* **Automated Generic Substitution:** Queries an authenticated medicine database (`cleaned_medicines.csv`) to surface clinically identical alternatives ranked by cost savings.
+- computer vision for extracting medicine names from prescription images,
+- structured price prediction using machine learning,
+- alternative matching against a cleaned medicine database.
 
 ---
 
-## 🏗️ System Architecture & Data Flow
+## Features
+
+- 📷 OCR-powered medicine recognition from prescription images using EasyOCR
+- 🧠 Fair price prediction using trained ML models
+- 💰 Alternative medicine recommendations with cost-saving insights
+- 🧾 Support for manual medicine search and ingredient-based matching
+- ⚡ FastAPI backend for production-ready predictions
+- 🌐 Streamlit frontend for a simple, interactive user experience
+
+---
+
+## Project architecture
+
+```mermaid
+flowchart LR
+    User[User / Pharmacy Customer] --> UI[Streamlit Frontend]
+    UI --> API[FastAPI Backend]
+    API --> OCR[EasyOCR Extraction]
+    API --> ML[Price Prediction Model]
+    API --> DB[Medicine Dataset]
+    ML --> Result[Fair Price + Savings]
+    DB --> Alt[Alternative Suggestions]
+```
 
 ```text
-                                 USER / CLIENT
-                                       │
-                    ┌──────────────────┴──────────────────┐
-                    ▼                                     ▼
-         [ Upload Prescription ]                 [ Manual Search ]
-                    │                                     │
-                    └──────────────────┬──────────────────┘
-                                       ▼
-                       ┌───────────────────────────────┐
-                       │    STREAMLIT FRONTEND (UI)    │
-                       │ (Community Cloud Environment) │
-                       └───────────────┬───────────────┘
-                                       │
-                                       │ HTTP POST / REST (JSON)
-                                       ▼
-                       ┌───────────────────────────────┐
-                       │     FASTAPI BACKEND (API)     │
-                       │     (Render Cloud Engine)     │
-                       └───────────────┬───────────────┘
-                                       │
-             ┌─────────────────────────┼─────────────────────────┐
-             ▼                         ▼                         ▼
-   ┌───────────────────┐     ┌───────────────────┐     ┌───────────────────┐
-   │   EasyOCR Engine  │     │ Feature Pipeline  │     │ Substitute Search │
-   │ Text Extraction & │     │ OneHotEncoder &   │     │ Active Salt Match │
-   │ String Matching   │     │ PowerTransformer  │     │ Against Clean DB  │
-   └───────────────────┘     └─────────┬─────────┘     └───────────────────┘
-                                       ▼
-                             ┌───────────────────┐
-                             │ ML Inference Unit │
-                             │ HistGradientBoost │
-                             │ & Random Forest   │
-                             └─────────┬─────────┘
-                                       │
-                                       ▼
-                       ┌───────────────────────────────┐
-                       │   PREDICTION & SAVINGS API    │
-                       │  - Fair Predicted Price       │
-                       │  - Alternative Formulations   │
-                       │  - Potential Savings %        │
-                       └───────────────────────────────┘
-🧠 Machine Learning Lifecycle
-1. Exploratory Data Analysis & Data Sanitation
-The raw dataset undergoes rigorous data cleaning routines:
-Missing Value Imputation: Handled missing chemical salts, package measurements, and pricing anomalies using domain-specific heuristics.
-Text Normalization: Standardized medicine names, stripped dosage abbreviations (mg, mcg, ml, IU), and unified brand vs. generic nomenclature.
-Outlier Removal: Filtered corrupt prices (<= 0) and isolated ultra-rare specialty drugs to prevent artificial variance skew in common outpatient medicine predictions.
-2. Feature Engineering
-Salt Decomposition: Extracted primary active ingredients and secondary stabilizing salts into standardized arrays.
-Dosage Form Classification: Categorized formulations into discrete classes: Tablet, Capsule, Syrup, Injection, Ointment, Suspension.
-Packaging Unit Factorization: Standardized price per unit (price per tablet/ml) to prevent bulk packaging from misleading the regression algorithms.
-3. Preprocessing Pipeline (ColumnTransformer)
-To ensure mathematical stability and zero data leakage across training and inference, preprocessing is combined into a single serialized Scikit-Learn ColumnTransformer:
-Categorical Variables:
-OneHotEncoder(handle_unknown='ignore', sparse_output=False) — Prevents inference errors when encountering unseen brands or manufacturers in production.
-Continuous & Skewed Variables:
-PowerTransformer(method='yeo-johnson') — Stabilizes feature variance and transforms highly skewed medicine price/dosage distributions into approximately Gaussian shapes.
-4. Model Training, Tuning & Benchmark
-Two primary ensemble regression algorithms were trained and rigorously evaluated using Mean Absolute Error (MAE):
-Model Architecture	Mean Absolute Error (MAE)	In-Memory Footprint	Production Verdict
-HistGradientBoostingRegressor	49.77	~3.2 MB	🏆 Primary Production Model
-RandomForestRegressor	52.15	~48.5 MB	Baseline / Benchmark
-Why HistGradientBoostingRegressor Won:
-Higher Accuracy: Outperformed the Random Forest by reducing MAE by ~2.38 units.
-Native Binning & Speed: Handles continuous features through integer-based binning (similar to LightGBM), resulting in microsecond inference latency.
-Memory Footprint: Far more compact memory footprint, ensuring the Render free-tier container never exceeds its 512 MB RAM ceiling.
-5. Model Serialization & Production Strategy
-Retraining models at application launch causes unacceptable cold-start delays.
-All trained estimators, transformer pipelines, and scalers are pre-compiled and exported via joblib:
-backend/model/rf_model.joblib
-backend/model/preprocessor.joblib
-backend/model/power_transformer.joblib
-During container boot, the FastAPI application loads these artifacts into application memory once, delivering instant, sub-50ms inference.
-👁️ Optical Character Recognition (OCR) Engine
-The application integrates EasyOCR for computer vision-based prescription reading:
-code
-Text
-[Prescription Image] ──▶ [Grayscale / Contrast Enhancement] ──▶ [EasyOCR Text Detection] 
-                     ──▶ [Text Bounding Boxes & Confidence Filter] 
-                     ──▶ [Fuzzy Token Matching vs Medicine Database] ──▶ [Identified Medicine]
-Preprocessing: Standardizes image dimensions, eliminates background noise, and balances contrast.
-Text Detection: Identifies words and numerical dosage strings with bounding-box coordinates.
-Fuzzy String Matching: Because real-world prescriptions are often noisy, recognized text tokens are parsed against the standardized cleaned_medicines.csv dictionary using token-sort ratio algorithms to find the most probable medicine match.
-📁 Repository Architecture (Monorepo)
-code
-Text
-fair-medicine-prediction/
-├── README.md                          # Comprehensive documentation
-├── .gitignore                         # Unified Git ignore rules (ignores cache, venv, large files)
-│
-├── backend/                           # High-Performance FastAPI Application
-│   ├── app.py                         # API server routing, CORS, and inference entrypoints
-│   ├── Dockerfile                     # Containerization instructions for cloud environments
-│   ├── requirements.txt               # Backend dependencies (fastapi, scikit-learn, joblib, etc.)
-│   ├── .python-version                # Python runtime lock
+fair-medicine-predictio/
+├── README.md
+├── backend/
+│   ├── app.py
+│   ├── Dockerfile
+│   ├── requirements.txt
 │   ├── data/
-│   │   └── cleaned_medicines.csv      # Sanitized medicine and salt database
+│   │   └── cleaned_medicines.csv
 │   ├── model/
-│   │   ├── model.ipynb                # End-to-end EDA, cleaning, training & evaluation notebook
-│   │   ├── predict.py                 # Pure inference helper functions
-│   │   ├── power_transformer.joblib   # Serialized Yeo-Johnson PowerTransformer
-│   │   ├── preprocessor.joblib        # Serialized Scikit-Learn ColumnTransformer pipeline
-│   │   └── rf_model.joblib            # Serialized regression model
+│   │   ├── model.ipynb
+│   │   ├── predict.py
+│   │   ├── power_transformer.joblib
+│   │   ├── preprocessor.joblib
+│   │   └── rf_model.joblib
 │   └── schema/
-│       ├── alternative_response.py    # Pydantic validation schema for alternative drug responses
-│       └── price_prediction_response.py # Pydantic validation schema for predicted fair price
-│
-└── frontend/                          # Interactive Streamlit Web Interface
-    ├── app.py                         # Streamlit UI dashboard, state handling, and API client
-    ├── requirements.txt               # Frontend dependencies (streamlit, requests, easyocr, pillow)
-    ├── data/
-    │   └── cleaned_medicines.csv      # Local reference dataset for UI autocomplete
-    └── easyocr_data/                  # Cached OCR weights directory (excluded via .gitignore)
-📡 API Specifications & Contracts
-1. Health Check
-Endpoint: GET /
-Response:
-code
-JSON
+│       ├── alternative_response.py
+│       └── price_prediction_response.py
+├── frontend/
+│   ├── app.py
+│   ├── requirements.txt
+│   ├── data/
+│   │   └── cleaned_medicines.csv
+│   └── easyocr_data/
+└── .gitignore
+```
+
+---
+
+## Tech stack
+
+| Layer | Technologies |
+| --- | --- |
+| Frontend | Streamlit, Python |
+| Backend | FastAPI, Pydantic |
+| ML | scikit-learn, joblib |
+| OCR | EasyOCR |
+| Data | Pandas, NumPy |
+| Deployment | Render, Streamlit Cloud |
+
+---
+
+## How the system works
+
+### 1. Prescription or medicine input
+The user either uploads a prescription image or enters a medicine name manually.
+
+### 2. OCR and text extraction
+EasyOCR reads the medicine name and ingredients from the uploaded image.
+
+### 3. Feature engineering and prediction
+The backend preprocesses the extracted text and sends it through a trained regression model to estimate a fair price.
+
+### 4. Alternative matching
+The system compares the active ingredient and dosage against the cleaned medicine dataset to find cheaper equivalent options.
+
+### 5. Price comparison output
+The final response contains:
+
+- predicted fair price,
+- current price comparison,
+- potential savings,
+- alternative medicine list.
+
+---
+
+## Machine learning approach
+
+The project uses a trained ensemble regression model to estimate medicine price based on key attributes such as:
+
+- medicine name,
+- active ingredient composition,
+- dosage form,
+- packaging size,
+- manufacturer,
+- formulation type.
+
+### Model pipeline
+
+- categorical encoding with `OneHotEncoder`
+- skew correction through `PowerTransformer`
+- model training using regression-based ensemble methods
+- output serialization via `joblib` for fast inference
+
+---
+
+## API endpoints
+
+### GET /health
+
+Checks whether the backend service is healthy.
+
+```json
 {
   "status": "healthy",
   "service": "Fair Medicine API",
   "version": "1.0.0"
 }
-2. Fair Price Prediction
-Endpoint: POST /predict-price
-Request Payload (PricePredictionRequest):
-code
-JSON
+```
+
+### POST /predict-price
+
+Predicts a fair price for a medicine.
+
+```json
 {
   "medicine_name": "Augmentin 625 Duo Tablet",
   "salt_composition": "Amoxycillin (500mg) + Clavulanic Acid (125mg)",
@@ -198,33 +179,35 @@ JSON
   "units_per_pack": 10,
   "manufacturer": "GlaxoSmithKline Pharmaceuticals Ltd"
 }
-Response Payload (PricePredictionResponse):
-code
-JSON
+```
+
+Example response:
+
+```json
 {
   "medicine_name": "Augmentin 625 Duo Tablet",
   "predicted_fair_price": 142.35,
   "currency": "INR",
-  "confidence_interval": {
-    "lower": 132.10,
-    "upper": 152.60
-  },
   "is_overpriced": true,
   "overpriced_percentage": 38.5
 }
-3. Alternative Recommendations
-Endpoint: POST /find-alternatives
-Request Payload:
-code
-JSON
+```
+
+### POST /find-alternatives
+
+Finds cheaper and medically comparable alternatives.
+
+```json
 {
   "salt_composition": "Amoxycillin (500mg) + Clavulanic Acid (125mg)",
   "dosage_form": "Tablet",
   "limit": 3
 }
-Response Payload (AlternativeResponse):
-code
-JSON
+```
+
+Example response:
+
+```json
 {
   "query_composition": "Amoxycillin (500mg) + Clavulanic Acid (125mg)",
   "alternatives_count": 2,
@@ -232,119 +215,124 @@ JSON
     {
       "brand_name": "Moxikind-CV 625 Tablet",
       "manufacturer": "Mankind Pharma Ltd",
-      "price": 95.50,
+      "price": 95.5,
       "estimated_savings_percentage": 52.4
-    },
-    {
-      "brand_name": "Novamox CV 625mg Tablet",
-      "manufacturer": "Cipla Ltd",
-      "price": 108.20,
-      "estimated_savings_percentage": 46.1
     }
   ]
 }
-💻 Local Setup & Development Guide
-Prerequisites
-Python 3.10+ installed
-Git installed
-1. Clone the Project
-code
-Bash
-git clone https://github.com/sujal-jangir-111/fair-medicine-prediction.git
-cd fair-medicine-prediction
-2. Set Up the Backend API
-In your first terminal window:
-code
-Bash
-# Navigate to backend directory
-cd backend
+```
 
-# Create isolated virtual environment
-python -m venv venv
-
-# Activate virtual environment
-# Windows (PowerShell):
-.\venv\Scripts\Activate.ps1
-# Linux / macOS:
-source venv/bin/activate
-
-# Install strictly isolated backend requirements
-pip install --upgrade pip
-pip install -r requirements.txt
-
-# Start the FastAPI server
-uvicorn app:app --reload --host 127.0.0.1 --port 8000
-API Server will run at: http://127.0.0.1:8000
-Interactive Swagger Docs: http://127.0.0.1:8000/docs
-3. Set Up the Frontend Interface
-In a second terminal window:
-code
-Bash
-# Navigate to frontend directory
-cd frontend
-
-# Create isolated virtual environment
-python -m venv venv
-
-# Activate virtual environment
-# Windows (PowerShell):
-.\venv\Scripts\Activate.ps1
-# Linux / macOS:
-source venv/bin/activate
-
-# Install frontend requirements
-pip install --upgrade pip
-pip install -r requirements.txt
-
-# Launch the Streamlit dashboard
-streamlit run app.py
-Streamlit web interface will open automatically at: http://localhost:8501
-☁️ Production Cloud Deployment
-The application runs in a decoupled cloud architecture:
-1. Backend Service (Render)
-Environment: Python Web Service / Docker
-Repository: sujal-jangir-111/fair-medicine-prediction
-Root Directory: backend
-Build Command: pip install -r requirements.txt
-Start Command: uvicorn app:app --host 0.0.0.0 --port $PORT
-Auto-Deploy: Enabled on pushes to main branch.
-2. Frontend Web App (Streamlit Community Cloud)
-Repository: sujal-jangir-111/fair-medicine-prediction
-Branch: main
-Main File Path: frontend/app.py
-Environment Variable:
-code
-Text
-BACKEND_API_URL = "https://your-fair-medicine-api.onrender.com"
-🗺️ Roadmap & Future Enhancements
-
-Multi-Language OCR: Extend EasyOCR character extraction to support regional Indian languages (Hindi, Tamil, Telugu, Bengali).
-
-Barcode & QR Scanner: Add camera-based scanning for GS1 pharmaceutical barcodes to fetch drug compositions instantly without OCR errors.
-
-Mobile Responsive Flutter App: Port the frontend to mobile using Flutter, consuming the existing FastAPI backend.
-
-Government Drug Price Watch: Integrate official National Pharmaceutical Pricing Authority (NPPA) ceiling prices directly into the comparison view.
-👨‍💻 Author & Acknowledgments
-Sujal Jangir
-GitHub: @sujal-jangir-111
-Project Repository: fair-medicine-prediction
-Live Application: Streamlit Cloud Demo
-📜 License
-This project is licensed under the MIT License — see the LICENSE file for details. You are free to modify, distribute, and integrate this software in open-source and commercial applications.
-code
-Code
 ---
 
-### How to update your GitHub repo right now:
+## Local setup
 
-1. Open your project in VS Code.
-2. Click on `README.md`.
-3. Press `Ctrl + A`, then paste the entire text above.
-4. Save the file (`Ctrl + S`).
-5. Open your terminal in VS Code and run:
-   ```powershell
-   git add README.md
-   git commit -m "docs: add complete production-grade README with full pipeline details"
-   git push origin main
+### Prerequisites
+
+- Python 3.10+
+- Git
+- Virtual environment support
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/sujal-jangir-111/fair-medicine-prediction.git
+cd fair-medicine-prediction
+```
+
+### 2. Set up the backend
+
+```bash
+cd backend
+python -m venv venv
+
+# Windows (PowerShell)
+.\venv\Scripts\Activate.ps1
+
+# Linux/macOS
+source venv/bin/activate
+
+pip install --upgrade pip
+pip install -r requirements.txt
+uvicorn app:app --reload --host 127.0.0.1 --port 8000
+```
+
+API docs: http://127.0.0.1:8000/docs
+
+### 3. Set up the frontend
+
+```bash
+cd ../frontend
+python -m venv venv
+
+# Windows (PowerShell)
+.\venv\Scripts\Activate.ps1
+
+# Linux/macOS
+source venv/bin/activate
+
+pip install --upgrade pip
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+Frontend URL: http://localhost:8501
+
+---
+
+## Deployment
+
+### Backend
+The backend can be deployed using Render or any similar Python hosting provider.
+
+Example startup command:
+
+```bash
+uvicorn app:app --host 0.0.0.0 --port $PORT
+```
+
+### Frontend
+The frontend is designed for deployment on Streamlit Cloud and can consume the backend API via an environment variable such as:
+
+```bash
+BACKEND_API_URL=https://your-api-url.onrender.com
+```
+
+---
+
+## Roadmap
+
+- 🌍 Add multilingual OCR support for regional languages
+- 📱 Build a mobile-friendly interface
+- 🧾 Integrate barcode and QR-based drug detection
+- 🏛️ Connect with official medicine pricing and regulatory APIs
+- 🧪 Improve prediction quality with richer datasets and advanced models
+
+---
+
+## License
+
+This project is licensed under the MIT License.
+
+---
+
+## Author
+
+Built and maintained by Sujal Jangir.
+
+- GitHub: @sujal-jangir-111
+- Demo: [Streamlit App](https://fair-medicine-ui-9wqmwrtgdxoni8zmki7f47.streamlit.app/)
+
+---
+
+## Acknowledgments
+
+This project uses:
+
+- FastAPI for API development
+- Streamlit for interactive UI
+- EasyOCR for prescription image reading
+- scikit-learn for machine learning pipelines
+- Python ecosystem libraries for data processing and deployment
+
+If you want, I can also make this README even more premium by adding a custom banner section, a better architecture diagram, and a more polished project summary for GitHub profile and portfolio use.
  
